@@ -2,179 +2,220 @@
 import { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
+
+const SELLER_EMAIL = "admin@coircraft.ph";
+const SELLER_PASS = "seller123";
 
 export default function LoginPage() {
-  const { setUser } = useApp();
+  const { setUser, setSellerLoggedIn } = useApp();
   const router = useRouter();
-  const [form, setForm] = useState({ email: "", password: "" });
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
+
     setError("");
     setLoading(true);
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) { setError(data.error); return; }
-    setUser(data.user);
-    router.push("/store");
+
+    const emailClean = email.trim().toLowerCase();
+
+    // Seller path
+    if (emailClean === SELLER_EMAIL && password === SELLER_PASS) {
+      setSellerLoggedIn(true);
+      window.location.href = "/seller/dashboard";
+      return;
+    }
+
+    // API auth path (primary) - keeps database integration
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailClean, password }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      setUser(data.user);
+      router.push("/store");
+      return;
+    } catch (err) {
+      // Fallback local account path (for backwards compatibility)
+      let accounts = [];
+      try {
+        const raw = localStorage.getItem("cc_accounts");
+        if (raw) accounts = JSON.parse(raw);
+      } catch (_) {}
+
+      const match = accounts.find(
+        (a) => a.email.toLowerCase() === emailClean && a.password === password
+      );
+
+      if (match) {
+        setUser({
+          name: match.name,
+          email: match.email,
+          address: match.address || "",
+          mobile: match.mobile || "",
+        });
+        window.location.href = "/store";
+        return;
+      }
+
+      setError(err.message || "Incorrect email or password. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const inp = {
+    width: "100%",
+    border: "2px solid #E8EDE8",
+    borderRadius: 14,
+    padding: "13px 18px",
+    fontSize: 15,
+    fontFamily: "var(--font-body)",
+    outline: "none",
+    boxSizing: "border-box",
+    background: "#fff",
+    color: "#0E2011",
   };
 
   return (
-    <>
-      <Navbar />
-      <main
-        className="min-h-screen flex items-center justify-center py-16 px-4"
-        style={{ backgroundColor: "#f9fdf4" }}
-      >
-        <div
-          className="rounded-2xl shadow-xl p-8 w-full max-w-md"
-          style={{ backgroundColor: "#ffffff" }}
-        >
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="text-5xl mb-3">🥥</div>
-            <h1
-              className="text-2xl font-bold"
-              style={{ color: "#111827" }}
-            >
-              Welcome Back
-            </h1>
-            <p className="text-sm mt-1" style={{ color: "#4b5563" }}>
-              Login to your CoirCraft account
-            </p>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#FFFEF5",
+        fontFamily: "var(--font-body)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "48px 16px",
+      }}
+    >
+      <div style={{ position: "fixed", top: "-5%", right: "-5%", width: 500, height: 500, background: "radial-gradient(circle,rgba(168,255,62,0.09) 0%,transparent 65%)", borderRadius: "50%", pointerEvents: "none", zIndex: 0 }} />
+      <div style={{ position: "fixed", bottom: "-5%", left: "-5%", width: 420, height: 420, background: "radial-gradient(circle,rgba(26,71,42,0.07) 0%,transparent 65%)", borderRadius: "50%", pointerEvents: "none", zIndex: 0 }} />
+
+      <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, marginBottom: 28, zIndex: 1 }}>
+        <div style={{ background: "linear-gradient(135deg,#A8FF3E,#1A472A)", borderRadius: 14, width: 46, height: 46, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, boxShadow: "0 4px 14px rgba(168,255,62,0.35)" }}>🥥</div>
+        <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 22, color: "#0E2011" }}>
+          Coir<span style={{ color: "#1A7A2E" }}>Craft</span>
+        </span>
+      </Link>
+
+      <div style={{ position: "relative", zIndex: 1, background: "#fff", borderRadius: 28, boxShadow: "0 20px 56px rgba(14,32,17,0.1)", padding: "44px 44px 36px", width: "100%", maxWidth: 420 }}>
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 800, color: "#0E2011", margin: "0 0 6px", textAlign: "center" }}>
+          Welcome Back
+        </h1>
+        <p style={{ color: "#aaa", fontSize: 13, textAlign: "center", margin: "0 0 28px" }}>
+          Buyers and sellers use the same sign-in
+        </p>
+
+        {error && (
+          <div style={{ background: "#FFF0F0", border: "1.5px solid #FFCDD2", borderRadius: 12, padding: "11px 15px", marginBottom: 18, fontSize: 13, color: "#C62828", display: "flex", alignItems: "center", gap: 8 }}>
+            ⚠️ {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          <div>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#333", marginBottom: 7 }}>
+              Email Address
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setError(""); }}
+              placeholder="you@email.com"
+              style={inp}
+              onFocus={(e) => (e.target.style.borderColor = "#A8FF3E")}
+              onBlur={(e) => (e.target.style.borderColor = "#E8EDE8")}
+            />
           </div>
 
-          {/* Error */}
-          {error && (
-            <div
-              className="text-sm p-3 rounded-xl mb-5 border"
-              style={{
-                backgroundColor: "#fef2f2",
-                borderColor: "#fca5a5",
-                color: "#991b1b",
-              }}
-            >
-              ⚠️ {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
-            <div>
-              <label
-                className="block text-sm font-semibold mb-1.5"
-                style={{ color: "#111827" }}
-              >
-                📧 Email Address
-              </label>
+          <div>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#333", marginBottom: 7 }}>
+              Password
+            </label>
+            <div style={{ position: "relative" }}>
               <input
-                type="email"
+                type={showPass ? "text" : "password"}
                 required
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="you@email.com"
-                className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition"
-                style={{
-                  color: "#111827",
-                  backgroundColor: "#ffffff",
-                  border: "2px solid #e5e7eb",
-                }}
-                onFocus={(e) =>
-                  (e.target.style.border = "2px solid #2D5016")
-                }
-                onBlur={(e) =>
-                  (e.target.style.border = "2px solid #e5e7eb")
-                }
-              />
-            </div>
-
-            {/* Password */}
-            <div>
-              <label
-                className="block text-sm font-semibold mb-1.5"
-                style={{ color: "#111827" }}
-              >
-                🔒 Password
-              </label>
-              <input
-                type="password"
-                required
-                value={form.password}
-                onChange={(e) =>
-                  setForm({ ...form, password: e.target.value })
-                }
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setError(""); }}
                 placeholder="••••••••"
-                className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition"
-                style={{
-                  color: "#111827",
-                  backgroundColor: "#ffffff",
-                  border: "2px solid #e5e7eb",
-                }}
-                onFocus={(e) =>
-                  (e.target.style.border = "2px solid #2D5016")
-                }
-                onBlur={(e) =>
-                  (e.target.style.border = "2px solid #e5e7eb")
-                }
+                style={{ ...inp, paddingRight: 50 }}
+                onFocus={(e) => (e.target.style.borderColor = "#A8FF3E")}
+                onBlur={(e) => (e.target.style.borderColor = "#E8EDE8")}
               />
+              <button
+                type="button"
+                onClick={() => setShowPass(!showPass)}
+                style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#bbb", display: "flex" }}
+              >
+                {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 rounded-xl font-bold text-sm transition mt-2"
-              style={{
-                backgroundColor: loading ? "#6b7280" : "#2D5016",
-                color: "#ffffff",
-                cursor: loading ? "not-allowed" : "pointer",
-              }}
-            >
-              {loading ? "Logging in..." : "Login"}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px" style={{ backgroundColor: "#e5e7eb" }} />
-            <span className="text-xs" style={{ color: "#9ca3af" }}>or</span>
-            <div className="flex-1 h-px" style={{ backgroundColor: "#e5e7eb" }} />
           </div>
 
-          <p className="text-center text-sm" style={{ color: "#4b5563" }}>
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/register"
-              className="font-bold hover:underline"
-              style={{ color: "#2D5016" }}
-            >
-              Register here
-            </Link>
-          </p>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              marginTop: 6,
+              background: loading ? "#D4F5A0" : "linear-gradient(135deg,#A8FF3E,#5BCC1C)",
+              color: "#0E2011",
+              border: "none",
+              padding: "15px",
+              fontFamily: "var(--font-display)",
+              fontWeight: 800,
+              fontSize: 15,
+              borderRadius: 50,
+              cursor: loading ? "not-allowed" : "pointer",
+              boxShadow: loading ? "none" : "0 4px 20px rgba(168,255,62,0.38)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              transition: "transform 0.15s, box-shadow 0.15s",
+            }}
+            onMouseEnter={(e) => { if (!loading) e.currentTarget.style.transform = "scale(1.02)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+          >
+            {loading ? "Redirecting..." : "Sign In →"}
+          </button>
+        </form>
 
-          <p className="text-center text-xs mt-3" style={{ color: "#9ca3af" }}>
-            Are you a seller?{" "}
-            <Link
-              href="/seller/login"
-              className="font-semibold hover:underline"
-              style={{ color: "#2D5016" }}
-            >
-              Seller Login
-            </Link>
-          </p>
-        </div>
-      </main>
-      <Footer />
-    </>
+        <p style={{ textAlign: "center", fontSize: 13, color: "#aaa", margin: "20px 0 0" }}>
+          No account yet?{' '}
+          <Link href="/register" style={{ color: "#1A7A2E", fontWeight: 700, textDecoration: "none" }}>
+            Register here
+          </Link>
+        </p>
+      </div>
+
+      <div style={{ marginTop: 14, zIndex: 1, background: "rgba(255,255,255,0.8)", backdropFilter: "blur(6px)", border: "1px solid #E8FFD0", borderRadius: 12, padding: "10px 20px", fontSize: 12, color: "#888", textAlign: "center", maxWidth: 420, width: "100%" }}>
+        🏪 <strong style={{ color: "#1A7A2E" }}>Seller test account:</strong>{' '}
+        admin@coircraft.ph &nbsp;/&nbsp; seller123
+      </div>
+
+      <Link href="/" style={{ marginTop: 16, fontSize: 13, color: "#bbb", textDecoration: "none", zIndex: 1 }}>
+        ← Back to Home
+      </Link>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
   );
 }

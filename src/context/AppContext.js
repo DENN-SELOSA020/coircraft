@@ -1,80 +1,106 @@
-"use client";
-import { createContext, useContext, useState, useEffect } from "react";
+﻿"use client";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
-const AppContext = createContext({});
+const AppContext = createContext(null);
+
+// Safe defaults — identical on server and client
+const EMPTY = {
+  user:           null,
+  sellerLoggedIn: false,
+  cart:           [],
+  transactions:   [],
+  wishlist:       [],
+  reviews:        [],
+};
+
+function ls_read(key, fallback) {
+  try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : fallback; }
+  catch { return fallback; }
+}
+function ls_write(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* noop */ }
+}
 
 export function AppProvider({ children }) {
-  const [user, setUserState] = useState(null);
-  const [cart, setCart] = useState([]);
-  const [sellerLoggedIn, setSellerLoggedInState] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [s, setS] = useState(EMPTY); // always starts as EMPTY — same on server + client
 
   useEffect(() => {
-    setMounted(true);
-    try {
-      const u = localStorage.getItem("cc_user");
-      const c = localStorage.getItem("cc_cart");
-      const s = localStorage.getItem("cc_seller");
-      if (u) setUserState(JSON.parse(u));
-      if (c) setCart(JSON.parse(c));
-      if (s) setSellerLoggedInState(JSON.parse(s));
-    } catch (e) {
-      console.error("Storage error:", e);
-    }
+    setS({
+      user:           ls_read("cc_user",        null),
+      sellerLoggedIn: ls_read("cc_seller",       false),
+      cart:           ls_read("cc_cart",         []),
+      transactions:   ls_read("cc_transactions", []),
+      wishlist:       ls_read("cc_wishlist",     []),
+      reviews:        ls_read("cc_reviews",      []),
+    });
   }, []);
 
-  const setUser = (u) => {
-    setUserState(u);
-    try {
-      if (u) localStorage.setItem("cc_user", JSON.stringify(u));
-      else localStorage.removeItem("cc_user");
-    } catch (e) {}
-  };
-
-  const addToCart = (item) => {
-    setCart((prev) => {
-      const existing = prev.find((i) => i.id === item.id);
-      const updated = existing
-        ? prev.map((i) => i.id === item.id ? { ...i, qty: i.qty + 1 } : i)
-        : [...prev, { ...item, qty: 1 }];
-      try { localStorage.setItem("cc_cart", JSON.stringify(updated)); } catch (e) {}
-      return updated;
+  const patch = useCallback((key, value) => {
+    setS((p) => {
+      const next = { ...p, [key]: value };
+      ls_write({ user:"cc_user", sellerLoggedIn:"cc_seller", cart:"cc_cart", transactions:"cc_transactions", wishlist:"cc_wishlist", reviews:"cc_reviews" }[key], value);
+      return next;
     });
-  };
+  }, []);
 
-  const removeFromCart = (id) => {
-    setCart((prev) => {
-      const updated = prev.filter((i) => i.id !== id);
-      try { localStorage.setItem("cc_cart", JSON.stringify(updated)); } catch (e) {}
-      return updated;
+  const setUser           = useCallback((v) => patch("user", v),           [patch]);
+  const setSellerLoggedIn = useCallback((v) => patch("sellerLoggedIn", v), [patch]);
+
+  const addToCart = useCallback((item) => {
+    setS((p) => {
+      const found = p.cart.find((i) => i.id === item.id);
+      const cart  = found ? p.cart.map((i) => i.id === item.id ? { ...i, qty: i.qty + 1 } : i) : [...p.cart, { ...item, qty: 1 }];
+      ls_write("cc_cart", cart);
+      return { ...p, cart };
     });
-  };
+  }, []);
 
-  const updateQty = (id, qty) => {
-    setCart((prev) => {
-      const updated = prev.map((i) => i.id === id ? { ...i, qty } : i);
-      try { localStorage.setItem("cc_cart", JSON.stringify(updated)); } catch (e) {}
-      return updated;
+  const removeFromCart = useCallback((id) => {
+    setS((p) => { const cart = p.cart.filter((i) => i.id !== id); ls_write("cc_cart", cart); return { ...p, cart }; });
+  }, []);
+
+  const updateQty = useCallback((id, qty) => {
+    setS((p) => { const cart = p.cart.map((i) => i.id === id ? { ...i, qty } : i); ls_write("cc_cart", cart); return { ...p, cart }; });
+  }, []);
+
+  const clearCart = useCallback(() => {
+    setS((p) => { ls_write("cc_cart", []); return { ...p, cart: [] }; });
+  }, []);
+
+  const addTransaction = useCallback((tx) => {
+    setS((p) => { const transactions = [tx, ...p.transactions]; ls_write("cc_transactions", transactions); return { ...p, transactions }; });
+  }, []);
+
+  const setTransactions = useCallback((fn) => {
+    setS((p) => { const transactions = typeof fn === "function" ? fn(p.transactions) : fn; ls_write("cc_transactions", transactions); return { ...p, transactions }; });
+  }, []);
+
+  const markReceived = useCallback((id) => {
+    setS((p) => { const transactions = p.transactions.map((t) => t.id === id ? { ...t, status: "Received" } : t); ls_write("cc_transactions", transactions); return { ...p, transactions }; });
+  }, []);
+
+  const toggleWishlist = useCallback((productId) => {
+    setS((p) => {
+      const wishlist = p.wishlist.includes(productId) ? p.wishlist.filter((x) => x !== productId) : [...p.wishlist, productId];
+      ls_write("cc_wishlist", wishlist);
+      return { ...p, wishlist };
     });
-  };
+  }, []);
 
-  const clearCart = () => {
-    setCart([]);
-    try { localStorage.removeItem("cc_cart"); } catch (e) {}
-  };
+  const isWishlisted      = useCallback((id) => s.wishlist.includes(id), [s.wishlist]);
+  const getProductReviews = useCallback((id) => s.reviews.filter((r) => r.productId === id), [s.reviews]);
+  const canReview         = useCallback((id) => s.user && s.transactions.some((t) => t.status === "Received" && t.items?.some((i) => i.id === id)), [s.user, s.transactions]);
 
-  const setSellerLoggedIn = (v) => {
-    setSellerLoggedInState(v);
-    try { localStorage.setItem("cc_seller", JSON.stringify(v)); } catch (e) {}
-  };
+  const addReview = useCallback((review) => {
+    setS((p) => {
+      const reviews = [review, ...p.reviews.filter((r) => !(r.productId === review.productId && r.author === review.author))];
+      ls_write("cc_reviews", reviews);
+      return { ...p, reviews };
+    });
+  }, []);
 
   return (
-    <AppContext.Provider value={{
-      user, setUser,
-      cart, addToCart, removeFromCart, updateQty, clearCart,
-      sellerLoggedIn, setSellerLoggedIn,
-      mounted
-    }}>
+    <AppContext.Provider value={{ ...s, setUser, setSellerLoggedIn, addToCart, removeFromCart, updateQty, clearCart, addTransaction, setTransactions, markReceived, toggleWishlist, isWishlisted, addReview, getProductReviews, canReview }}>
       {children}
     </AppContext.Provider>
   );
