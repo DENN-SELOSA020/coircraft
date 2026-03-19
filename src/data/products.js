@@ -6,7 +6,7 @@ export const products = [
     category: "Home",
     tag: "Best Seller",
     stock: 40,
-    image: "https://images.unsplash.com/photo-1567225557594-88d73e55f2cb?w=600&auto=format&fit=crop",
+    image: "https://www.worldmarket.com/dw/image/v2/BJWT_PRD/on/demandware.static/-/Sites-wm-master-catalog/default/dwc37944cd/images/large/676_XXX_v1.jpg?sw=2000&sh=2000&sm=fit&sfrm=tif&q=80",
     description: "Natural coir fiber door mat, durable and eco-friendly. Scrapes dirt off shoes effectively."
   },
   {
@@ -16,7 +16,7 @@ export const products = [
     category: "Garden",
     tag: "Trending",
     stock: 25,
-    image: "https://images.unsplash.com/photo-1622383563227-04401ab4e5ea?w=600&auto=format&fit=crop",
+    image: "https://plantohlics.store/cdn/shop/articles/coir_pots_6863994a-61aa-4ecd-ba94-aca0257b2a6b.png?v=1754558759&width=1100",
     description: "100% biodegradable coir pot. Plant directly into the ground — no transplant shock."
   },
   {
@@ -26,7 +26,7 @@ export const products = [
     category: "Construction",
     tag: "New",
     stock: 60,
-    image: "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=600&auto=format&fit=crop",
+    image: "https://4.imimg.com/data4/UA/WS/MY-3342076/coir-rope-500x500.jpg",
     description: "Strong natural coir rope, 10 meters. Ideal for construction, gardening, and crafts."
   },
   {
@@ -36,7 +36,7 @@ export const products = [
     category: "Construction",
     tag: "Featured",
     stock: 15,
-    image: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600&auto=format&fit=crop",
+    image: "https://4.imimg.com/data4/SS/IY/MY-35984602/img_20161125_214641-1000x1000.jpg",
     description: "Eco-friendly decorative wall panel made from compressed coconut coir fiber."
   },
   {
@@ -46,7 +46,7 @@ export const products = [
     category: "Garden",
     tag: "Best Seller",
     stock: 30,
-    image: "https://images.unsplash.com/photo-1598880940080-ff9a29891b85?w=600&auto=format&fit=crop",
+    image: "https://m.media-amazon.com/images/I/71YfboCswdL._SX679_.jpg",
     description: "Beautiful hanging basket with natural coir fiber lining. Perfect for flowers and plants."
   },
   {
@@ -56,7 +56,7 @@ export const products = [
     category: "Home",
     tag: "New",
     stock: 12,
-    image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&auto=format&fit=crop",
+    image: "https://m.media-amazon.com/images/I/812NAhJD4QL._AC_SY300_SX300_QL70_FMwebp_.jpg",
     description: "Firm natural coir mattress pad for breathable, supportive, eco-friendly sleep."
   },
   {
@@ -66,7 +66,7 @@ export const products = [
     category: "Home",
     tag: "New",
     stock: 50,
-    image: "https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?w=600&auto=format&fit=crop",
+    image: "https://m.media-amazon.com/images/I/71+bbckmjBL._SX679_.jpg",
     description: "Natural coconut coir scrub brush. Great for cleaning floors, tiles, and outdoor surfaces."
   },
   {
@@ -76,7 +76,7 @@ export const products = [
     category: "Construction",
     tag: "Trending",
     stock: 20,
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&auto=format&fit=crop",
+    image: "https://m.media-amazon.com/images/I/61tD0QPDZsL._AC_SX679_.jpg",
     description: "Heavy-duty coir erosion control mat for slopes, embankments, and landscaping projects."
   },
   {
@@ -86,7 +86,7 @@ export const products = [
     category: "Garden",
     tag: "Featured",
     stock: 35,
-    image: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=600&auto=format&fit=crop",
+    image: "https://growrichindia.in/images/seedling_tray1.jpg",
     description: "Biodegradable coir seedling tray with 24 cells. Start seeds sustainably."
   },
   {
@@ -96,7 +96,7 @@ export const products = [
     category: "Home",
     tag: "Best Seller",
     stock: 28,
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop",
+    image: "https://ik.imagekit.io/2xkwa8s1i/img/npl_modified_images/Coir_Mat/WDMTCOIR4575WLS1/1.jpg?tr=w-1200",
     description: "Decorative coir welcome mat with natural fiber design. Warm and eco-friendly."
   },
   {
@@ -106,7 +106,7 @@ export const products = [
     category: "Garden",
     tag: "New",
     stock: 45,
-    image: "https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?w=600&auto=format&fit=crop",
+    image: "https://siridepot.com/media/catalog/product/cache/06261322d8c2b6b1b1475f0d02512171/c/o/coir_mulch_mat_24in_1_3.jpg",
     description: "Natural coir mulch mat for garden beds. Suppresses weeds and retains moisture."
   },
   {
@@ -116,7 +116,7 @@ export const products = [
     category: "Construction",
     tag: "Featured",
     stock: 10,
-    image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&auto=format&fit=crop",
+    image: "https://siridepot.com/media/catalog/product/cache/06261322d8c2b6b1b1475f0d02512171/g/e/geo_textiles_add_in_web_page.jpg",
     description: "Industrial-grade coir geotextile roll for erosion control in civil construction."
   }
 ];

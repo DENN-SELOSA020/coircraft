@@ -41,7 +41,7 @@ export default function StorePage() {
   return (
     <>
       <Navbar />
-      <main style={{ background: "var(--background)", minHeight: "100vh", fontFamily: "var(--font-body)" }}>
+      <main style={{ background: "var(--tk-bg)", minHeight: "100vh", fontFamily: "var(--font-body)" }}>
         <section style={{ background: "linear-gradient(135deg,#1A472A 0%,#0E2011 55%,#1A5C2E 100%)", padding: "clamp(48px,10vw,90px) 16px clamp(70px,12vw,120px)", textAlign: "center" }}>
           <h1 style={{ fontFamily: "var(--font-display)", color: "#fff", fontSize: "clamp(28px,6vw,58px)", fontWeight: 800, margin: 0 }}>🌿 CoirCraft Storefront</h1>
           <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "clamp(13px,2.5vw,16px)", marginTop: 8 }}>Discover our curated collection of premium coconut coir goods</p>
